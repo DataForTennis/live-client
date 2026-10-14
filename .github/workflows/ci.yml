@@ -1,0 +1,31 @@
+name: client-check
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.21.0'
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
+      - run: npm run release:package
+      - name: Check reproducible artifacts
+        run: |
+          cp release/SHA256SUMS /tmp/live-client-SHA256SUMS
+          npm run build
+          npm run release:package
+          cmp /tmp/live-client-SHA256SUMS release/SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-client-release
+          path: release/
+          if-no-files-found: error

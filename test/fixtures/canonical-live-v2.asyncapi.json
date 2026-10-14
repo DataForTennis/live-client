@@ -1,0 +1,2145 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "Data for Tennis canonical live stream",
+    "version": "2.0.0",
+    "description": "Limited engineering preview. ATP Tour/Challenger men singles, WTA/WTA125 singles and ITF men/women singles as observed. Predictions only for admitted ATP250/500/1000 men singles ordinary BO3 editions. Predictions remain shadow. One collector and one calculation per input revision, shared across subscribers. No commentary or proprietary model inputs are public."
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "production": {
+      "host": "api.datafortennis.com",
+      "protocol": "wss"
+    }
+  },
+  "channels": {
+    "live": {
+      "address": "/v2/live",
+      "description": "Authenticate in the first message. Close1008 for invalid or expired tickets; close1013 for a slow consumer. Reconnect with a fresh ticket and last processed cursor.",
+      "servers": [
+        {
+          "$ref": "#/servers/production"
+        }
+      ],
+      "messages": {
+        "Authenticate": {
+          "$ref": "#/components/messages/Authenticate"
+        },
+        "Subscribe": {
+          "$ref": "#/components/messages/Subscribe"
+        },
+        "Ping": {
+          "$ref": "#/components/messages/Ping"
+        },
+        "Authenticated": {
+          "$ref": "#/components/messages/Authenticated"
+        },
+        "Snapshot": {
+          "$ref": "#/components/messages/Snapshot"
+        },
+        "SnapshotStarted": {
+          "$ref": "#/components/messages/SnapshotStarted"
+        },
+        "SnapshotChunk": {
+          "$ref": "#/components/messages/SnapshotChunk"
+        },
+        "SnapshotCompleted": {
+          "$ref": "#/components/messages/SnapshotCompleted"
+        },
+        "ReplayStarted": {
+          "$ref": "#/components/messages/ReplayStarted"
+        },
+        "ReplayCompleted": {
+          "$ref": "#/components/messages/ReplayCompleted"
+        },
+        "ResyncRequired": {
+          "$ref": "#/components/messages/ResyncRequired"
+        },
+        "Pong": {
+          "$ref": "#/components/messages/Pong"
+        },
+        "Heartbeat": {
+          "$ref": "#/components/messages/Heartbeat"
+        },
+        "MatchChanged": {
+          "$ref": "#/components/messages/MatchChanged"
+        },
+        "PointUpserted": {
+          "$ref": "#/components/messages/PointUpserted"
+        },
+        "PointRemoved": {
+          "$ref": "#/components/messages/PointRemoved"
+        },
+        "PredictionUpdated": {
+          "$ref": "#/components/messages/PredictionUpdated"
+        },
+        "PredictionStatusUpdated": {
+          "$ref": "#/components/messages/PredictionStatusUpdated"
+        }
+      }
+    }
+  },
+  "operations": {
+    "clientMessages": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/live"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/live/messages/Authenticate"
+        },
+        {
+          "$ref": "#/channels/live/messages/Subscribe"
+        },
+        {
+          "$ref": "#/channels/live/messages/Ping"
+        }
+      ]
+    },
+    "serverMessages": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/live"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/live/messages/Authenticated"
+        },
+        {
+          "$ref": "#/channels/live/messages/Snapshot"
+        },
+        {
+          "$ref": "#/channels/live/messages/SnapshotStarted"
+        },
+        {
+          "$ref": "#/channels/live/messages/SnapshotChunk"
+        },
+        {
+          "$ref": "#/channels/live/messages/SnapshotCompleted"
+        },
+        {
+          "$ref": "#/channels/live/messages/ReplayStarted"
+        },
+        {
+          "$ref": "#/channels/live/messages/ReplayCompleted"
+        },
+        {
+          "$ref": "#/channels/live/messages/ResyncRequired"
+        },
+        {
+          "$ref": "#/channels/live/messages/Pong"
+        },
+        {
+          "$ref": "#/channels/live/messages/Heartbeat"
+        },
+        {
+          "$ref": "#/channels/live/messages/MatchChanged"
+        },
+        {
+          "$ref": "#/channels/live/messages/PointUpserted"
+        },
+        {
+          "$ref": "#/channels/live/messages/PointRemoved"
+        },
+        {
+          "$ref": "#/channels/live/messages/PredictionUpdated"
+        },
+        {
+          "$ref": "#/channels/live/messages/PredictionStatusUpdated"
+        }
+      ]
+    }
+  },
+  "components": {
+    "schemas": {
+      "LiveMatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "match_id",
+          "player_ids",
+          "player_names",
+          "tournament_id",
+          "edition_id",
+          "draw_id",
+          "tournament_name",
+          "tour",
+          "gender",
+          "discipline",
+          "category",
+          "prediction_eligible",
+          "best_of",
+          "round",
+          "scheduled_start",
+          "status",
+          "interruption_reason",
+          "score_revision",
+          "prediction_input_revision",
+          "score",
+          "score_observed_at",
+          "source_last_observed_at",
+          "score_received_at",
+          "enrichment_deadline_at",
+          "point_id",
+          "point_sequence",
+          "point_revision",
+          "statistics",
+          "availability"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "match_id": {
+            "type": "string",
+            "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "player_ids": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "pattern": "^ply_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            }
+          },
+          "player_names": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 256
+            }
+          },
+          "tournament_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^trn_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "edition_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^edt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "draw_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^drw_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "tournament_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "tour": {
+            "type": "string",
+            "enum": [
+              "atp",
+              "wta",
+              "itf"
+            ]
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "men",
+              "women"
+            ]
+          },
+          "discipline": {
+            "type": "string",
+            "enum": [
+              "singles"
+            ]
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "prediction_eligible": {
+            "type": "boolean"
+          },
+          "best_of": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "enum": [
+              3,
+              5,
+              null
+            ]
+          },
+          "round": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 40
+          },
+          "scheduled_start": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "warmup",
+              "live",
+              "suspended",
+              "finished",
+              "retired",
+              "walkover",
+              "cancelled",
+              "unknown"
+            ]
+          },
+          "interruption_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "rain",
+              "medical",
+              "toilet_break",
+              "interruption",
+              "cancelled",
+              null
+            ]
+          },
+          "score_revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "prediction_input_revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "score": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sets",
+              "points",
+              "server_side",
+              "points_kind"
+            ],
+            "properties": {
+              "sets": {
+                "type": "array",
+                "maxItems": 5,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "set",
+                    "side1_games",
+                    "side2_games"
+                  ],
+                  "properties": {
+                    "set": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    "side1_games": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 7
+                    },
+                    "side2_games": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 7
+                    }
+                  }
+                }
+              },
+              "points": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "required": [
+                  "side1",
+                  "side2"
+                ],
+                "properties": {
+                  "side1": {
+                    "type": "string",
+                    "maxLength": 3
+                  },
+                  "side2": {
+                    "type": "string",
+                    "maxLength": 3
+                  }
+                }
+              },
+              "server_side": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "enum": [
+                  1,
+                  2,
+                  null
+                ]
+              },
+              "points_kind": {
+                "type": "string",
+                "enum": [
+                  "normal",
+                  "tiebreak",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "score_observed_at": {
+            "type": "string",
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "source_last_observed_at": {
+            "type": "string",
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "score_received_at": {
+            "type": "string",
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "enrichment_deadline_at": {
+            "type": "string",
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "point_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^pnt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "point_sequence": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "point_revision": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "statistics": {
+            "type": "array",
+            "maxItems": 128,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "code",
+                "side_no",
+                "period",
+                "numerator",
+                "denominator",
+                "value",
+                "unit",
+                "basis",
+                "point_sequence"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "side_no": {
+                  "type": "integer",
+                  "enum": [
+                    1,
+                    2
+                  ]
+                },
+                "period": {
+                  "type": "string",
+                  "pattern": "^(match|set_[1-5])$"
+                },
+                "numerator": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "denominator": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "ratio",
+                    "percent",
+                    "count",
+                    "km_h",
+                    "seconds"
+                  ]
+                },
+                "basis": {
+                  "type": "string",
+                  "enum": [
+                    "verified_point_prefix",
+                    "provider_snapshot"
+                  ]
+                },
+                "point_sequence": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 2000
+                }
+              }
+            }
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "stale"
+            ]
+          },
+          "winner_player_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^ply_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "winner_basis": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "provider",
+              "completed_score",
+              null
+            ]
+          },
+          "result_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "normal",
+              "retired",
+              "walkover",
+              "cancelled",
+              null
+            ]
+          },
+          "status_updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          }
+        }
+      },
+      "LivePoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "match_id",
+          "revision",
+          "sequence",
+          "set_no",
+          "game_no",
+          "point_no"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^pnt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "match_id": {
+            "type": "string",
+            "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "set_no": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "game_no": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "point_no": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999
+          },
+          "source_observed_at": {
+            "type": "string",
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "received_at": {
+            "type": "string",
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "observed_under_score_revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "score_before": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "maxLength": 16
+            }
+          },
+          "score_after": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "maxLength": 16
+            }
+          },
+          "server_side": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "enum": [
+              1,
+              2,
+              null
+            ]
+          },
+          "winner_side": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "enum": [
+              1,
+              2,
+              null
+            ]
+          },
+          "serve_number": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "enum": [
+              1,
+              2,
+              null
+            ]
+          },
+          "result_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ace",
+              "double_fault",
+              "winner",
+              "unforced_error",
+              "forced_error",
+              null
+            ]
+          },
+          "serve_speed_raw": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 400
+          },
+          "rally_count_by_side": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            }
+          },
+          "rally_length_missing": {
+            "type": "boolean"
+          },
+          "rally_length": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "match_elapsed_seconds": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 86400
+          }
+        }
+      },
+      "CurrentPrediction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "match_id",
+          "player_ids",
+          "status",
+          "state_revision",
+          "source_observed_at",
+          "computed_at",
+          "expires_at",
+          "model_version",
+          "model_generation",
+          "probabilities",
+          "quality"
+        ],
+        "properties": {
+          "prediction_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^prd_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "match_id": {
+            "type": "string",
+            "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "player_ids": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "pattern": "^ply_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            }
+          },
+          "state_revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "score_revision": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "point_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^pnt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "point_sequence": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "point_revision": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "history_sequence": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "model_version": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 160
+          },
+          "model_generation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "probabilities": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "quality": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "features_used",
+              "features_total",
+              "qualification"
+            ],
+            "properties": {
+              "features_used": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 77
+              },
+              "features_total": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "enum": [
+                  77,
+                  null
+                ]
+              },
+              "qualification": {
+                "type": "string",
+                "enum": [
+                  "shadow"
+                ]
+              },
+              "enrichment": {
+                "type": "string",
+                "enum": [
+                  "legacy",
+                  "score_only",
+                  "point_by_point"
+                ]
+              }
+            }
+          },
+          "source_observed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "source_last_observed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "score_observed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "score_received_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "enrichment_received_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "prediction_requested_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "computed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "supersedes_prediction_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^prd_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "warming",
+              "live",
+              "pending",
+              "stale",
+              "suspended",
+              "finished",
+              "unavailable",
+              "unsupported"
+            ]
+          }
+        }
+      },
+      "PredictionRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "prediction_id",
+          "match_id",
+          "player_ids",
+          "state_revision",
+          "score_revision",
+          "point_id",
+          "point_sequence",
+          "history_sequence",
+          "model_version",
+          "model_generation",
+          "probabilities",
+          "quality",
+          "computed_at",
+          "score_observed_at",
+          "score_received_at",
+          "enrichment_received_at",
+          "prediction_requested_at"
+        ],
+        "properties": {
+          "prediction_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^prd_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "match_id": {
+            "type": "string",
+            "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "player_ids": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "pattern": "^ply_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            }
+          },
+          "state_revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "score_revision": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "point_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^pnt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "point_sequence": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "point_revision": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "history_sequence": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "model_version": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 160
+          },
+          "model_generation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "probabilities": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "quality": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "features_used",
+              "features_total",
+              "qualification"
+            ],
+            "properties": {
+              "features_used": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 77
+              },
+              "features_total": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "enum": [
+                  77,
+                  null
+                ]
+              },
+              "qualification": {
+                "type": "string",
+                "enum": [
+                  "shadow"
+                ]
+              },
+              "enrichment": {
+                "type": "string",
+                "enum": [
+                  "legacy",
+                  "score_only",
+                  "point_by_point"
+                ]
+              }
+            }
+          },
+          "source_observed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "source_last_observed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "score_observed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "score_received_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "enrichment_received_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "prediction_requested_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "computed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+          },
+          "supersedes_prediction_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^prd_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          }
+        }
+      },
+      "MatchState": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "match_id",
+          "score_revision",
+          "match",
+          "last_point"
+        ],
+        "properties": {
+          "match_id": {
+            "type": "string",
+            "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "score_revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$"
+          },
+          "match": {
+            "$ref": "#/components/schemas/LiveMatch"
+          },
+          "last_point": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LivePoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "prediction": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CurrentPrediction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "messages": {
+      "Authenticate": {
+        "name": "Authenticate",
+        "title": "Authenticate",
+        "description": "First message within five seconds. Obtain a 60 second signed ticket using the REST API. Never place tickets in URLs. Renewal resets the subscription. Opt in with resumable:true for a server-issued private resume token. Reconnect with a fresh ticket, resumable:true and the previous lane token to atomically replace that lane within the two-session limit. A token grants no capabilities and is never a substitute for a valid ticket. Keep it out of logs.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "ticket"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "authenticate"
+              ]
+            },
+            "ticket": {
+              "type": "string",
+              "maxLength": 8192
+            },
+            "resumable": {
+              "type": "boolean"
+            },
+            "resume_token": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        }
+      },
+      "Subscribe": {
+        "name": "Subscribe",
+        "title": "Subscribe",
+        "description": "Omit after for a consistent snapshot. Include it for bounded replay. Point event history is opt in; composed updates include the last point by default.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "subscribe"
+              ]
+            },
+            "match_ids": {
+              "type": "array",
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+              }
+            },
+            "tours": {
+              "type": "array",
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "atp",
+                  "wta",
+                  "itf"
+                ]
+              }
+            },
+            "genders": {
+              "type": "array",
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "men",
+                  "women"
+                ]
+              }
+            },
+            "categories": {
+              "type": "array",
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              }
+            },
+            "include_point_events": {
+              "type": "boolean"
+            },
+            "after": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            }
+          }
+        }
+      },
+      "Ping": {
+        "name": "Ping",
+        "title": "Ping",
+        "description": "Application ping. Wire ping/pong heartbeats are also supported.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "ping"
+              ]
+            }
+          }
+        }
+      },
+      "Authenticated": {
+        "name": "Authenticated",
+        "title": "Authenticated",
+        "description": "The ticket is verified. Resubscribe after each renewal. resume_token appears only after resumable:true. Save the latest token separately for each lane; replacement rotates it. Classic clients retain their original response shape.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "expires_at",
+            "include_predictions"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "authenticated"
+              ]
+            },
+            "expires_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "include_predictions": {
+              "type": "boolean"
+            },
+            "resume_token": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        }
+      },
+      "Snapshot": {
+        "name": "Snapshot",
+        "title": "Snapshot",
+        "description": "Replace local state. Cursor and entity projections were selected consistently.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "cursor",
+            "matches"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "snapshot"
+              ]
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "matches": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/components/schemas/MatchState"
+              }
+            }
+          }
+        }
+      },
+      "SnapshotStarted": {
+        "name": "SnapshotStarted",
+        "title": "SnapshotStarted",
+        "description": "Begin a replacement snapshot. Hold its chunks until SnapshotCompleted.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "cursor",
+            "match_count"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "2.0"
+            },
+            "type": {
+              "const": "snapshot.started"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "match_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3072
+            }
+          }
+        }
+      },
+      "SnapshotChunk": {
+        "name": "SnapshotChunk",
+        "title": "SnapshotChunk",
+        "description": "Ordered bounded snapshot chunk at the shared snapshot cursor.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "cursor",
+            "index",
+            "matches"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "2.0"
+            },
+            "type": {
+              "const": "snapshot.chunk"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1023
+            },
+            "matches": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/components/schemas/MatchState"
+              }
+            }
+          }
+        }
+      },
+      "SnapshotCompleted": {
+        "name": "SnapshotCompleted",
+        "title": "SnapshotCompleted",
+        "description": "Commit the complete replacement snapshot. Replay catches up any events accepted while it was transmitted.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "cursor"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "2.0"
+            },
+            "type": {
+              "const": "snapshot.completed"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            }
+          }
+        }
+      },
+      "ReplayStarted": {
+        "name": "ReplayStarted",
+        "title": "ReplayStarted",
+        "description": "Following events are historical replay until ReplayCompleted.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "after",
+            "cursor"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "replay.started"
+              ]
+            },
+            "after": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            }
+          }
+        }
+      },
+      "ReplayCompleted": {
+        "name": "ReplayCompleted",
+        "title": "ReplayCompleted",
+        "description": "Store the checkpoint, including sequences filtered out of your subscription.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "cursor"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "replay.completed"
+              ]
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            }
+          }
+        }
+      },
+      "ResyncRequired": {
+        "name": "ResyncRequired",
+        "title": "ResyncRequired",
+        "description": "A replacement snapshot follows. Hot replay is bounded to 5000 events and 16 MiB; durable outbox retention is 48 hours.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "reason",
+            "cursor"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "resync_required"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "enum": [
+                "CURSOR_NOT_IN_HOT_WINDOW",
+                "DURABLE_CURSOR_EXPIRED"
+              ]
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            }
+          }
+        }
+      },
+      "Pong": {
+        "name": "Pong",
+        "title": "Pong",
+        "description": "Application pong.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "at"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "pong"
+              ]
+            },
+            "at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            }
+          }
+        }
+      },
+      "Heartbeat": {
+        "name": "Heartbeat",
+        "title": "Heartbeat",
+        "description": "Shared freshness refresh without recalculating the model. Clear cached probabilities on a non-live prediction status or expiry.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "type",
+            "cursor",
+            "server_time",
+            "matches"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "heartbeat"
+              ]
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "server_time": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "matches": {
+              "type": "array",
+              "maxItems": 3072,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "match_id",
+                  "score_revision",
+                  "prediction_input_revision",
+                  "source_last_observed_at",
+                  "availability"
+                ],
+                "properties": {
+                  "match_id": {
+                    "type": "string",
+                    "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+                  },
+                  "score_revision": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,17})$"
+                  },
+                  "prediction_input_revision": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,17})$"
+                  },
+                  "source_last_observed_at": {
+                    "type": "string",
+                    "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+                  },
+                  "availability": {
+                    "type": "string",
+                    "enum": [
+                      "observed",
+                      "stale"
+                    ]
+                  },
+                  "prediction_status": {
+                    "type": "string",
+                    "enum": [
+                      "warming",
+                      "live",
+                      "pending",
+                      "stale",
+                      "suspended",
+                      "finished",
+                      "unavailable",
+                      "unsupported"
+                    ]
+                  },
+                  "prediction_expires_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "MatchChanged": {
+        "name": "MatchChanged",
+        "title": "MatchChanged",
+        "description": "Committed event. Deduplicate by event_id and upsert entities by own ID plus revision. The composed prediction matches both score_revision and prediction_input_revision.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "event_id",
+            "cursor",
+            "type",
+            "match_id",
+            "source_observed_at",
+            "published_at",
+            "data",
+            "state"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "event_id": {
+              "type": "string",
+              "pattern": "^evt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "match.created",
+                "match.score.updated",
+                "match.status.updated",
+                "match.status.corrected",
+                "match.metadata.updated",
+                "match.statistics.updated"
+              ]
+            },
+            "match_id": {
+              "type": "string",
+              "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "source_observed_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "published_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "data": {
+              "$ref": "#/components/schemas/LiveMatch"
+            },
+            "state": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/MatchState"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "PointUpserted": {
+        "name": "PointUpserted",
+        "title": "PointUpserted",
+        "description": "Committed event. Deduplicate by event_id and upsert entities by own ID plus revision. The composed prediction matches both score_revision and prediction_input_revision.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "event_id",
+            "cursor",
+            "type",
+            "match_id",
+            "source_observed_at",
+            "published_at",
+            "data",
+            "state"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "event_id": {
+              "type": "string",
+              "pattern": "^evt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "match.point.upserted"
+              ]
+            },
+            "match_id": {
+              "type": "string",
+              "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "source_observed_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "published_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "data": {
+              "$ref": "#/components/schemas/LivePoint"
+            },
+            "state": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/MatchState"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "PointRemoved": {
+        "name": "PointRemoved",
+        "title": "PointRemoved",
+        "description": "Committed event. Deduplicate by event_id and upsert entities by own ID plus revision. The composed prediction matches both score_revision and prediction_input_revision.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "event_id",
+            "cursor",
+            "type",
+            "match_id",
+            "source_observed_at",
+            "published_at",
+            "data",
+            "state"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "event_id": {
+              "type": "string",
+              "pattern": "^evt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "match.point.removed"
+              ]
+            },
+            "match_id": {
+              "type": "string",
+              "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "source_observed_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "published_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "match_id",
+                "revision",
+                "sequence"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^pnt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+                },
+                "match_id": {
+                  "type": "string",
+                  "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "sequence": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2000
+                }
+              }
+            },
+            "state": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/MatchState"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "PredictionUpdated": {
+        "name": "PredictionUpdated",
+        "title": "PredictionUpdated",
+        "description": "Committed event. Deduplicate by event_id and upsert entities by own ID plus revision. The composed prediction matches both score_revision and prediction_input_revision.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "event_id",
+            "cursor",
+            "type",
+            "match_id",
+            "source_observed_at",
+            "published_at",
+            "data",
+            "state"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "event_id": {
+              "type": "string",
+              "pattern": "^evt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "prediction.updated"
+              ]
+            },
+            "match_id": {
+              "type": "string",
+              "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "source_observed_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "published_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "data": {
+              "$ref": "#/components/schemas/PredictionRecord"
+            },
+            "state": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/MatchState"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "PredictionStatusUpdated": {
+        "name": "PredictionStatusUpdated",
+        "title": "PredictionStatusUpdated",
+        "description": "Committed event. Deduplicate by event_id and upsert entities by own ID plus revision. The composed prediction matches both score_revision and prediction_input_revision.",
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "event_id",
+            "cursor",
+            "type",
+            "match_id",
+            "source_observed_at",
+            "published_at",
+            "data",
+            "state"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "enum": [
+                "2.0"
+              ]
+            },
+            "event_id": {
+              "type": "string",
+              "pattern": "^evt_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "cursor": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})$"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "prediction.status.updated"
+              ]
+            },
+            "match_id": {
+              "type": "string",
+              "pattern": "^mat_[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "source_observed_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "published_at": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|\\+00:00)$"
+            },
+            "data": {
+              "$ref": "#/components/schemas/CurrentPrediction"
+            },
+            "state": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/MatchState"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

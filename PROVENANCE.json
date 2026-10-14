@@ -1,0 +1,13 @@
+{
+  "runtime_source_commit": "b8d2084077f8a7dde9ea3af4f2c0f59efa610e04",
+  "contract_sha256": "48c10d1668c641286e88a197efd9a74b0aa125296e21731263c34702070d4bfb",
+  "schema_version": "2.0",
+  "client_behavior": "Same delivery implementation as the qualified reference client; standalone public packaging.",
+  "runtime_module_sha256": {
+    "src/client/resilient-live-client.ts": "f768a800de3e3cfd30d153743a757d5b8a93d914998440ebfc2e997df65f84e8",
+    "src/client/pinned-frame-validator.ts": "ba476cfc23b986b6b97abb71bf7b3a7ead8eaf91b6e9b6394a09c6070f787d8c",
+    "src/client/frame-coherence.ts": "a9da00c76e4e9605fb49477afefbd647c398e790c865f01834c24f912d463b08",
+    "src/client/live-validators.generated.ts": "e605824dadfa0149b481702956cc0abc35842526f4b0d3799323956a4f51bdcc",
+    "src/canonical/renewal-coordinator.ts": "8b036bf90ace54673223b2fff91ca3a3d0899a867bad58d5b493ee9520ca83a0"
+  }
+}
